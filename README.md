@@ -52,8 +52,30 @@ Files are in .csv format.
 
 Software: R Studio Desktop
 
-<h3>3.Process</h3>
+<h3>3.Process</h3> View <a href="https://github.com/Dimitra-Nikoloutsou/Google_Data_Analytics_Bellabeat_Case_Study/blob/main/R%20file">R File</a>  
 
-<h3>4.Analyse</h3>
+<h3>4.Analyse</h3> View <a href="https://github.com/Dimitra-Nikoloutsou/Google_Data_Analytics_Bellabeat_Case_Study/blob/main/R%20file">R File</a>  
 
-<h3>35.Share</h3>
+<h3>5.Share</h3>
+
+![download](https://user-images.githubusercontent.com/114480002/198731400-45f02361-92a9-461b-8232-b3f4e8a9e390.png)
+![download (1)](https://user-images.githubusercontent.com/114480002/198731432-97e7802a-dc99-4aa6-a0b9-228b8b9d0bcc.png)
+![download (2)](https://user-images.githubusercontent.com/114480002/198731455-28f16885-64d4-49b4-880d-6bcfbee53b0a.png)
+
+<h1>INSIGHTS</h1>
+
+Average steps, 8319, is considered low active. According to the CDC, most adults should aim for 10,000 steps per day for general health and especially if the target is fitness or weight loss.
+
+Average sedentary minutes, 955.8 or 15.9 hours, is too high compared to the active minutes and that is something that should change for health promotion.
+
+Light Active Distance has the highest average which means that the users are not very active.
+
+However the average MET is 14.69 which corresponds to vigorous activities that aren't probably practiced often.
+
+From the first scatter plot it is obvious that the more steps the more calories are burned.
+
+From the Average Total Intensity VS Time histogram we can observe that the most popular hours are between 17:00 and 19:00. The users choose this time period for activities because it is after working hours.
+
+Most of the users choose to practice vigorous activities that require more energy for the muscles. However, there is a negative relationship between the mean seconds and the METs. Knowing the MET value of an activity can also be helpful in calculating how many calories are burned during exercise. The formula requires the weight too but as the data is missing and we have weight data for only 8 users, conclusions and recommendations won't take place for this data.
+
+<b>Published in <a href="https://www.kaggle.com/code/dimitranikoloutsou/bellabeat-case-study">Kaggle</a>  
