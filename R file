@@ -1,0 +1,172 @@
+#Install and Load packages
+install.packages("tidyverse")
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+#Import datasets
+Daily_activity <- read.csv("dailyActivity_merged.csv")
+Daily_calories <-  read.csv("dailyCalories_merged.csv")
+Daily_intensities <-  read.csv("dailyIntensities_merged.csv")
+Daily_steps <- read.csv("dailySteps_merged.csv")
+HeartRate <- read.csv("heartrate_seconds_merged.csv")
+Hourly_calories <- read.csv("hourlyCalories_merged.csv")
+Hourly_intensities <-  read.csv("hourlyIntensities_merged.csv")
+Hourly_steps <- read.csv("hourlySteps_merged.csv")
+Minute_calories <-  read.csv("minuteCaloriesNarrow_merged.csv")
+Minute_calories_1 <-  read.csv("minuteCaloriesWide_merged.csv")
+Minute_intensities <-  read.csv("minuteIntensitiesNarrow_merged.csv")
+Minute_intensities_1 <-  read.csv("minuteIntensitiesWide_merged.csv")
+Minute_Mets <- read.csv("minuteMETsNarrow_merged.csv")
+Minute_sleep <- read.csv("minuteSleep_merged.csv")
+Minute_step <- read.csv("minuteStepsNarrow_merged.csv")
+Minute_step1 <- read.csv("minuteStepsWide_merged.csv")
+Sleep_day <- read.csv("sleepDay_merged.csv")
+Weight <- read.csv("weightLogInfo_merged.csv")
+
+#Check data structure
+str(Daily_activity)
+str(Hourly_calories)
+str(Daily_intensities)
+str(HeartRate)
+head(Daily_activity)
+
+#Format date in Activity, Calories and Intensities data sets
+Daily_activity$ActivityDate <- as.Date(Daily_activity$ActivityDate, format =  "%m/%d/%Y")
+Daily_calories$ActivityDay <- as.Date(Daily_calories$ActivityDay, format =  "%m/%d/%Y")
+Daily_intensities$ActivityDate <- as.Date(Daily_intensities$ActivityDate, format =  "%m/%d/%Y")
+
+##Rename column in calories
+Daily_calories <- rename(Daily_calories, ActivityDate = ActivityDay)
+
+#Format date time in Hourly_intensities
+str(Hourly_intensities)
+
+Hourly_intensities$ActivityHour <- as.POSIXct(Hourly_intensities$ActivityHour, format =  "%m/%d/%Y %I:%M:%S %p")
+
+Hourly_intensities$Date <- as.Date(Hourly_intensities$ActivityHour)
+
+Hourly_intensities$Time <- format(Hourly_intensities$ActivityHour,"%H:%M:%S")
+
+#Format date time in Minute_Mets
+Minute_Mets$ActivityMinute <- as.POSIXct(Minute_Mets$ActivityMinute, format =  "%m/%d/%Y %I:%M:%S %p")
+
+Minute_Mets$Date <- as.Date(Minute_Mets$ActivityMinute)
+
+Minute_Mets$Time <- format(Minute_Mets$ActivityMinute,"%H:%M:%S")
+
+#View length of users
+length(unique(Daily_activity$Id))
+length(unique(HeartRate$Id))
+length(unique(Daily_steps$Id))
+length(unique(Daily_calories$Id))
+length(unique(Daily_intensities$Id))
+length(unique(Hourly_intensities$Id))
+length(unique(Hourly_calories$Id))
+length(unique(Sleep_day$Id))
+length(unique(Minute_Mets$Id))
+length(unique(Weight$Id))
+
+#According to this Kaggle data set there are personal fitness tracker from thirty fitbit users.
+#From data exploration there are 33 users in Activity, Calories, Intensities, Steps and METs data. Sleep data has 24 users, Heart Rate data 14 users and Weight data 8 users.
+#Business task is to find insights from one Bellabeat product. However some data can't be analyzed due to data issues like unequal number of users in data.
+
+#Test merging daily activities and METs to check Ids
+Minute_Mets <- rename(Minute_Mets, ActivityDate = Date)
+
+test1 = merge(x=Daily_activity,y=Minute_Mets,by=c("Id", "ActivityDate"))
+
+length(unique(test1$Id))
+
+#Based on the number of users that is 33, I am going to analyze Activity, Calories, Intensities, Steps and METs data.
+#Intensities and Steps are merged in Activity data.
+
+#Merge data activity+calories
+merged_df = merge(x=Daily_activity,y=Daily_calories,by=c("Id", "ActivityDate"))
+
+#Check length of users in merged data set
+length(unique(merged_df$Id))
+
+#Fix columns in merged data
+merged_df <- rename(merged_df, Calories = Calories.x)
+
+merged_df$Calories.y <- NULL
+
+str(merged_df)
+
+#New merged data set where total steps=0
+merged_df1 <- subset(merged_df, TotalSteps != 0)
+str(merged_df1)
+
+#Statistics summary
+merged_df1 %>%  
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes, Calories) %>%
+  summary()
+
+
+merged_df1 %>%  
+  select(VeryActiveDistance,
+         ModeratelyActiveDistance,
+         LightActiveDistance,
+         SedentaryActiveDistance) %>%
+  summary()
+
+merged_df1 %>%  
+  select(VeryActiveMinutes,
+         FairlyActiveMinutes,
+         LightlyActiveMinutes,
+         SedentaryMinutes) %>%
+  summary()
+
+##Fix METs Table first
+
+length(unique(Minute_Mets$METs))
+unique(Minute_Mets$METs)
+max(unique(Minute_Mets$METs))
+min(unique(Minute_Mets$METs))
+
+Minute_Mets$Seconds <- period_to_seconds(hms(Minute_Mets$Time))
+
+METs <- Minute_Mets %>%
+  group_by(METs) %>% 
+  summarize(Mean_Sec = mean(Seconds))
+
+Minute_Mets %>% 
+  select(METs,
+         Seconds) %>% 
+  summary()
+  
+#Visualization Total Steps VS Calories
+ggplot(data = merged_df1, aes(x=TotalSteps, y=Calories)) +
+  geom_point() + 
+  geom_smooth(fill=NA) +
+    xlab("Total Steps") +
+  ggtitle("Total Steps VS Calories") 
+
+#Visualization Average Total Intensity VS Time
+##Fix Intensity Table first
+Intensities <- Hourly_intensities %>%
+    group_by(Time) %>%
+    drop_na() %>%
+    summarise(Mean_Int = mean(TotalIntensity)) 
+    
+ggplot(data = Intensities, aes(x=Time, y=Mean_Int)) +
+  geom_histogram(stat = "identity", binwidth = 10, fill = "Dark Green") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Average Total Intensity") +
+  ggtitle("Average Total Intensity VS Time") 
+
+#Visualization METs VS Time
+ggplot(data = METs, aes(x=METs, y=Mean_Sec)) +
+  geom_point() + 
+  geom_smooth(fill=NA) +
+  ylab("Mean Seconds") +
+  ggtitle("Mean Seconds VS METs")
+  
+
+
+
